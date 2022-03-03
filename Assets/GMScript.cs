@@ -5,6 +5,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 // ReSharper disable once InconsistentNaming
@@ -39,6 +40,9 @@ public class GMScript : MonoBehaviour
 
     private int _inARow;
 
+    private int prevMaxScore; // Used in enemy function
+    
+
     // private int _width = 0, _height = 0;
 
     private Vector3Int[] _myPiece;
@@ -53,6 +57,7 @@ public class GMScript : MonoBehaviour
     private Vector3Int[] PIECE_S;
     private Vector3Int[] PIECE_I;
     private Vector3Int[][] PIECES;
+    private AudioManager sfxManager;
 
     private void InitializePieces()
     {
@@ -72,6 +77,9 @@ public class GMScript : MonoBehaviour
         Dirty = true;
         _initialized = false;
         InitializePieces();
+        sfxManager = FindObjectOfType<AudioManager>();
+        
+        sfxManager.Play("Tetris");
     }
     
     private Vector3Int[] CreateAPiece(int midX, int maxY)
@@ -337,35 +345,81 @@ public class GMScript : MonoBehaviour
     //
     //     return output;
     // } 
+    
     private const int GOOD_SCORE = 10000;
-    private int EvaluateEnemyPieceScore(Vector3Int[] piece, Vector3Int[] chunk, bool drop = true)
-    {
-        if (null == piece || null == chunk) return -GOOD_SCORE;
-        var combined = drop ? DropPiece(piece,false).Concat(chunk).ToArray() : piece.Concat(chunk).ToArray();
+    private int EvaluateEnemyPieceScore(Vector3Int[] piece, Vector3Int[] chunk, bool drop = true) {
+        int score = 0;
+        if (null == piece || null == chunk) {
+            //score -= 100;
+            return -GOOD_SCORE;
+        };
+
+        var combined = piece;
+        if (drop) {
+            combined = DropPiece(piece, false).Concat(chunk).ToArray();
+        } else {
+            Debug.Log("drop is false"); 
+            piece.Concat(chunk).ToArray();
+        }
         
         var row = FindKillableRow(combined, _maxEx - _minEx + 1);
         if (row != NO_ROW)
         {
-            Debug.Log("FOUND A LINE: ");
+            Debug.Log("FOUND A LINE: " + row);
             return GOOD_SCORE; // LINE!
         }
-        if (DEBUG_MODE) Debug.Log($"{combined.Average(p => p.y)}");//\n{ChunkToString(combined)}");
-        return 100 * (int) (BOUNDS_MAX - combined.Average(p => p.y)); // HIGHEST SCORE = LOWEST AVERAGE 
+        
+        if (DEBUG_MODE) Debug.Log($"combined.Average y: {combined.Average(p => p.y)}");//\n{ChunkToString(combined)}");
+
+        score = 100 * (int) (BOUNDS_MAX - combined.Average(p => p.y)); // HIGHEST SCORE = LOWEST AVERAGE HEIGHT
+        return score;
     }
 
+    /**
+     * Returns a piece for the enemy having done an action
+     */
     private Vector3Int[] EnemyChooseAction(Vector3Int[] piece)
     {
-        if (null == piece) return null; 
-        var enemyGoLeft = ShiftPiece(piece, -1, 0, false);
-        var enemyGoRight = ShiftPiece(piece, 1, 0, false);
-        var enemyGoRotate = RotatePiece(piece, false);
-        Vector3Int[][] enemyOptions = {enemyGoLeft, enemyGoRight, enemyGoRotate, piece};
+        List<Vector3Int[]> enemyOptions = new List<Vector3Int[]>();
+        if (null == piece) return null;
+        var p = piece;
+        for (int i = 0; i < 4; i++) {
+            p = RotatePiece(p, false);
+            int dx = -1;
+            while (ValidPiece(ShiftPiece(p, dx, 0, false), false)) {
+                enemyOptions.Add(ShiftPiece(p, dx, 0, false));
+                dx--;
+            }
+            dx = 1;
+            while (ValidPiece(ShiftPiece(p, dx, 0, false), false)) {
+                enemyOptions.Add(ShiftPiece(p, dx, 0, false));
+                dx++;
+            }
+        }
+        
+        //var enemyGoLeft = ShiftPiece(piece, -1, 0, false);
+        //var enemyGoRight = ShiftPiece(piece, 1, 0, false);
+        //enemyOptions.Add(enemyGoLeft);
+        //enemyOptions.Add(enemyGoRight);
+        //enemyOptions.Add(enemyGoRotate);
+        //Vector3Int[][] enemyOptions = {enemyGoLeft, enemyGoRight, enemyGoRotate, piece};
         var validOptions = enemyOptions.Where(p => ValidPiece(p, false)).ToArray();
         if (!validOptions.Any()) return piece;
+        
+        // Pick the option with the Max score
         var maxScore = validOptions.Max(p => EvaluateEnemyPieceScore(p, _enemyChunk));
-        validOptions = validOptions.Where(p => EvaluateEnemyPieceScore(p, _enemyChunk) == maxScore).ToArray();
-        if (DEBUG_MODE) Debug.Log($"max score = {maxScore}; options = {validOptions.Length}");
-        return validOptions.ElementAt(Random.Range(0, validOptions.Count())); 
+        if (maxScore > prevMaxScore) {
+            // Filter all options for the maxScore
+            validOptions = validOptions.Where(p => EvaluateEnemyPieceScore(p, _enemyChunk) == maxScore).ToArray();
+            if (DEBUG_MODE) Debug.Log($"max score = {maxScore}; options = {validOptions.Length}");
+            //return validOptions.ElementAt(Random.Range(0, validOptions.Count())); 
+
+            prevMaxScore = maxScore;
+            // Pick randomly among options with the max score
+            return validOptions.ElementAt(Random.Range(0, validOptions.Count())); 
+        }
+
+        return piece;
     }
     
     private void EnemyDoAction()
@@ -374,6 +428,7 @@ public class GMScript : MonoBehaviour
         if (null == _enemyPiece)
         {
             _enemyPiece = CreateAPiece((_minEx + _maxEx) / 2, _maxEy);
+            prevMaxScore = 0;
             if (!ValidPiece(_enemyPiece, false))
             {
                 if (DEBUG_MODE) Debug.Log("ENEMY DEAD");
@@ -487,8 +542,12 @@ public class GMScript : MonoBehaviour
             }
         }
         
-        
         if (Input.GetKeyDown(KeyCode.Q)) { Debug.Break(); }
+
+        if (Input.GetKeyDown(KeyCode.R)) {
+            sfxManager.Stop("Tetris");
+            SceneManager.LoadScene("TetrisScene"); }
+        
         else if (Input.GetMouseButtonDown(0)) 
         {
             var point = Camera.main.ScreenToWorldPoint(Input.mousePosition); 

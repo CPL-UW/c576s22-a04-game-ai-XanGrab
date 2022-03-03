@@ -185,7 +185,8 @@ MonoBehaviour:
 
     LEFT:LEFT   // RIGHT:RIGHT
 
-    Q :QUIT'
+    Q :QUIT    
+    // R :RESTART'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 36455d494ab36465b94b6a1f8d20d817, type: 2}
   m_sharedMaterial: {fileID: 4705425391772312874, guid: 36455d494ab36465b94b6a1f8d20d817, type: 2}
@@ -646,7 +647,7 @@ MonoBehaviour:
   boardMap: {fileID: 1879409278}
   enemyMap: {fileID: 1220258179}
   infoText: {fileID: 321624255}
-  DEBUG_MODE: 0
+  DEBUG_MODE: 1
 --- !u!1 &1220258176
 GameObject:
   m_ObjectHideFlags: 0
@@ -8609,3 +8610,54 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &1956947441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1956947443}
+  - component: {fileID: 1956947442}
+  m_Layer: 0
+  m_Name: SFX Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1956947442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956947441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a161dba11fc71424eb54edf17a28e41c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - name: Tetris
+    clip: {fileID: 8300000, guid: 7b676a374fbe4ba43bdc4561c14552ee, type: 3}
+    volume: 0.3
+    loop: 1
+    source: {fileID: 0}
+    output: {fileID: 24397082, guid: 7b8f9398c9728eb4f8f71a790ba2bd5f, type: 2}
+--- !u!4 &1956947443
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956947441}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.7564, y: -1.3563197, z: -0.041270792}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
