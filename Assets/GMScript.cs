@@ -181,7 +181,7 @@ public class GMScript : MonoBehaviour
                     maxCount--;
                 }
             }
-
+            
             if (0 == maxCount)
             {
                 return row;
@@ -322,29 +322,29 @@ public class GMScript : MonoBehaviour
         }
     }
 
-    // private string ChunkToString(Vector3Int[] chunk)
-    // {
-    //     var output = "";
-    //     var min_y = chunk.Min(p => p.y);
-    //     var min_x = chunk.Min(p => p.x);
-    //     var max_y = chunk.Max(p => p.y);
-    //     var max_x = chunk.Max(p => p.x);
-    //     var truth_board = new bool[max_x-min_x+2,max_y-min_y+2];
-    //     foreach (var p in chunk)
-    //     {
-    //         truth_board[p.x - min_x, p.y - min_y] = true;
-    //     }
-    //     for (var x = min_x; x <= max_x; x++)
-    //     {
-    //         for (var y = min_y; y <= max_y; y++)
-    //         {
-    //             output += truth_board[x - min_x, y - min_y] ? "." : " ";
-    //         }
-    //         output += "\n";
-    //     }
-    //
-    //     return output;
-    // } 
+     //private string ChunkToString(Vector3Int[] chunk)
+     //{
+     //    var output = "";
+     //    var min_y = chunk.Min(p => p.y);
+     //    var min_x = chunk.Min(p => p.x);
+     //    var max_y = chunk.Max(p => p.y);
+     //    var max_x = chunk.Max(p => p.x);
+     //    var truth_board = new bool[max_x-min_x+2,max_y-min_y+2];
+     //    foreach (var p in chunk)
+     //    {
+     //        truth_board[p.x - min_x, p.y - min_y] = true;
+     //    }
+     //    for (var x = min_x; x <= max_x; x++)
+     //    {
+     //        for (var y = min_y; y <= max_y; y++)
+     //        {
+     //            output += truth_board[x - min_x, y - min_y] ? "." : " ";
+     //        }
+     //        output += "\n";
+     //    }
+    
+     //    return output;
+     //} 
     
     private const int GOOD_SCORE = 10000;
     private int EvaluateEnemyPieceScore(Vector3Int[] piece, Vector3Int[] chunk, bool drop = true) {
@@ -369,7 +369,7 @@ public class GMScript : MonoBehaviour
             return GOOD_SCORE; // LINE!
         }
         
-        if (DEBUG_MODE) Debug.Log($"combined.Average y: {combined.Average(p => p.y)}");//\n{ChunkToString(combined)}");
+        //if (DEBUG_MODE) Debug.Log($"combined.Average y: {combined.Average(p => p.y)}");//\n{ChunkToString(combined)}");
 
         score = 100 * (int) (BOUNDS_MAX - combined.Average(p => p.y)); // HIGHEST SCORE = LOWEST AVERAGE HEIGHT
         return score;
@@ -524,6 +524,13 @@ public class GMScript : MonoBehaviour
             MakeRandomAngryChunk();
         }
         else _inARow = 0;
+        
+        row_to_kill = FindKillableRow(_enemyChunk,_maxBx - _minBx + 1);
+        if (NO_ROW != row_to_kill)
+        {
+            _enemyChunk = KillRow(_enemyChunk, row_to_kill);
+        }
+        
         infoText.text = $"PTS:{_score}\t\tMAX:{_difficulty}\nCURRIC 576";
         _fixedUpdateCount = 1;
     }

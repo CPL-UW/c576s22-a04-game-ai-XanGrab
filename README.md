@@ -1,8 +1,3 @@
-# CS576-Tetris-Sample
+# CS576-Tetris-Assi04 - Grabowki
 
-1. Clone this repo
-2. Open it in a 2021 version of Unity
-3. 2xClick TetrisScene (in Assets/Scenes)
-4. Hit run?
-
-Apologies for the mess. YMMV.
+Expanded movement space (decision tree) of enemy AI
