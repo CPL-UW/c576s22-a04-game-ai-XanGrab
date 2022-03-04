@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.SceneManagement;
@@ -40,7 +41,7 @@ public class GMScript : MonoBehaviour
 
     private int _inARow;
 
-    private int prevMaxScore; // Used in enemy function
+    private int prevMaxScore = -10000; // Used in enemy function
     
 
     // private int _width = 0, _height = 0;
@@ -366,12 +367,21 @@ public class GMScript : MonoBehaviour
         if (row != NO_ROW)
         {
             Debug.Log("FOUND A LINE: " + row);
-            return GOOD_SCORE; // LINE!
+            return GOOD_SCORE * 5; // LINE!
         }
         
         //if (DEBUG_MODE) Debug.Log($"combined.Average y: {combined.Average(p => p.y)}");//\n{ChunkToString(combined)}");
 
         score = 100 * (int) (BOUNDS_MAX - combined.Average(p => p.y)); // HIGHEST SCORE = LOWEST AVERAGE HEIGHT
+        int prevY = combined[0].y;
+        for (int i = 1; i < combined.Length; i++) {
+            score -= (combined[i].y - prevY) * 10;
+            prevY = combined[i].y;
+        }
+        
+        if (combined.Max(p => p.y) >= _enemyChunk.Max(p => p.y)) {
+            score -= 1000;
+        }
         return score;
     }
 
@@ -436,6 +446,9 @@ public class GMScript : MonoBehaviour
         }
         else
         {
+            if (_enemyChunk == null) {
+                _enemyPiece = DropPiece(_enemyPiece, false);
+            }
 
             var tmpPiece = ShiftPiece(_enemyPiece, 0, -1, false);
             if (!ValidPiece(tmpPiece, false))
@@ -446,6 +459,12 @@ public class GMScript : MonoBehaviour
             else
             {
                 _enemyPiece = EnemyChooseAction(tmpPiece);
+                if (EvaluateEnemyPieceScore(_enemyPiece, _enemyChunk) == prevMaxScore) {
+                    float drop = Random.value;
+                    if (drop < 0.25f) {
+                        _enemyPiece = DropPiece(_enemyPiece, false);
+                    }
+                }
                 //_enemyPiece = EnemyChooseRecursive(tmpPiece);
             }
         }
